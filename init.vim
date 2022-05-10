@@ -35,6 +35,7 @@ let g:loaded_tarPlugin = 1 " Nope
 " Config: {{{
 " Import Plugins: {{{
 " Handle Plugins with minpac 
+packadd minpac
 if exists('*minpac#init')
   call minpac#init()
 
@@ -63,8 +64,7 @@ if exists('*minpac#init')
   call minpac#add('editorconfig/editorconfig-vim')
 
   " Editor plugins/UI
-  call minpac#add('ajmwagar/vim-deus') " Colorsheme
-  call minpac#add('ajmwagar/lightline-deus') " Status bar theme
+  call minpac#add('arcticicestudio/nord-vim') " nord-vim-theme
   call minpac#add('itchyny/lightline.vim') " Status bar
   call minpac#add('junegunn/goyo.vim', {'type': 'opt'})
   call minpac#add('mengelbrecht/lightline-bufferline')
@@ -132,13 +132,18 @@ function! s:show_documentation()
   endif
 endfunction
 
+function! s:EditAlternate()
+    let l:alter = CocRequest('clangd', 'textDocument/switchSourceHeader', {'uri': 'file://'.expand("%:p")})
+    " remove file:/// from response
+    let l:alter = substitute(l:alter, "file://", "", "")
+    execute 'edit ' . l:alter
+endfunction
+autocmd FileType cpp nmap rn :call <SID>EditAlternate()<CR>
+
 " Highlight symbol under cursor on CursorHold
 autocmd CursorHold * silent call CocActionAsync('highlight')
 
 autocmd User CocDiagnosticChange silent call s:MaybeUpdateLightline()
-
-" Remap for rename current word
-nmap <leader>rn <Plug>(coc-rename)
 
 " Remap for format selected region
 vmap <leader>f  <Plug>(coc-format-selected)
@@ -217,7 +222,7 @@ endfunction
 
 " use lightline-buffer in lightline
 let g:lightline = {
-      \ 'colorscheme': 'deus',
+      \ 'colorscheme': 'nord',
       \ 'component_expand': {
       \   'linter_warnings': 'CocWarnings',
       \   'linter_errors': 'CocErrors',
@@ -415,8 +420,8 @@ set linebreak " Wraps lines a words
 set breakindent " Consistent indent of wrapped linex
 " set textwidth=100 " Wrap at 100 chars
 set expandtab " Use spaces instead of tab
-set softtabstop=2 " Number of spaces per tab
-set shiftwidth=2   " Number of auto indent spaces
+set softtabstop=4 " Number of spaces per tab
+set shiftwidth=4   " Number of auto indent spaces
 set autoindent " Auto indent
 set noshiftround " Indent lines by 2 not by nearest mutiple of two
 " }}}
@@ -507,7 +512,6 @@ set ttyfast " Rendering
 set hlsearch "  Highlight all search results
 set incsearch " Searches the string incrementaly
 set smartcase " Enable smart case 
-set ignorecase " Always case-insensitive
 set showmatch " Highlight matching brace
 " }}}
 " Persistent undo: {{{
@@ -574,7 +578,7 @@ endif
 set background=dark    " Setting dark mode
 let g:deus_italics = 1
 set fillchars+=vert:\ 
-colorscheme deus
+colorscheme nord
 
 
 " }}}
