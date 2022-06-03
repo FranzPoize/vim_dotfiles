@@ -65,6 +65,7 @@ if exists('*minpac#init')
 
   " Editor plugins/UI
   call minpac#add('arcticicestudio/nord-vim') " nord-vim-theme
+  call minpac#add('mg979/vim-visual-multi') # multiple cursors
   call minpac#add('itchyny/lightline.vim') " Status bar
   call minpac#add('junegunn/goyo.vim', {'type': 'opt'})
   call minpac#add('mengelbrecht/lightline-bufferline')
@@ -285,8 +286,8 @@ function! Timer()
 endfunction
 
 function! GitBranch()
-  if (fugitive#head() != '')
-    return fugitive#head() . ' '
+  if (FugitiveHead() != '')
+    return FugitiveHead() . ' '
   endif
   return ''
 endfunction
@@ -342,7 +343,7 @@ let g:ascii = [
       \ ''
       \]
 let g:startify_custom_header = g:ascii
-"" }}}
+" }}}
 " Packadd: {{{
 " Define user commands for updating/cleaning the plugins.
 " Each of them loads minpac, reloads .vimrc to register the
@@ -351,12 +352,12 @@ command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'
 command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
 command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
 
-" Godown packadd
-" autocmd FileType markdown packadd godown-vim
-"
-" Goyo and Limelight
-command! GoyoStart packadd goyo.vim | packadd limelight.vim | Goyo
+" vim-visual-multi {{{
+let g:VM_maps = {}
+let g:VM_maps['Find Under'] = '<C-d>'
+let g:VM_maps['Find Subword Under'] = '<C-d>'
 " }}}
+
 " NerdTree: {{{
 
 map <C-n> :NERDTreeToggle<CR>
