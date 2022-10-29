@@ -6,6 +6,7 @@
 -- By: Francois Poizat (@FranzP)
 
 vim.cmd [[packadd packer.nvim]]
+vim.cmd [[packadd vimspector]]
 
 -- Set leader
 vim.g.mapleader = " "
@@ -33,30 +34,79 @@ require('packer').startup(function(use)
         }
     }
 
-    use {
-        'folke/which-key.nvim', -- get easy info about bindings
-        config = function()
-            require('which-key').setup {
-            }
-        end
-    }
+    use 'folke/which-key.nvim' -- get easy info about bindings
 
     use 'neovim/nvim-lspconfig' -- language server config for neovim lsp client
+    use { 'ms-jpq/coq_nvim', run = 'python3 -m coq deps' }
+    use 'ms-jpq/coq.artifacts'
+    use 'ms-jpq/coq.thirdparty'
+    use 'p00f/clangd_extensions.nvim'
 
     use 'akinsho/toggleterm.nvim' -- terminal stuff
 
-    use 'junegunn/fzf'
-
     use 'editorconfig/editorconfig-vim'
+    use { 'junegunn/fzf', run = './install --bin', }
+    use {
+      'nvim-telescope/telescope.nvim', tag = '0.1.0',
+    -- or                            , branch = '0.1.x',
+      requires = { {'nvim-lua/plenary.nvim'} }
+    }
+
+    use 'lewis6991/gitsigns.nvim'
 
     use 'folke/tokyonight.nvim'
-    use 'itchyny/lightline.vim' -- status bar
-    use 'mengelbrecht/lightline-bufferline'
+    use 'windwp/windline.nvim'
     use 'mhinz/vim-startify'
+    use 'folke/trouble.nvim'
+    use 'nvim-treesitter/nvim-treesitter'
+    use 'romgrk/barbar.nvim'
+    use {
+      'weilbith/nvim-code-action-menu',
+      cmd = 'CodeActionMenu',
+    }
+    use 'mfussenegger/nvim-dap'
+    use 'rcarriga/nvim-dap-ui'
 end)
 
+require('dapui').setup()
+
+-- Git
+require('gitsigns').setup()
+
+--Tree sitter
+require('nvim-treesitter.configs').setup {
+  ensure_installed = {'cpp', 'lua', 'cmake', 'python', 'fish', 'glsl', 'make', 'markdown'},
+  auto_install = true,
+}
+
+-- build
+local Terminal  = require('toggleterm.terminal').Terminal
+local build = Terminal:new({
+    dir = "~/gamedev/build",
+    cmd = 'make -j 8', hidden = true, direction = 'horizontal',
+    close_on_exit = false
+})
+
+function _build_debug()
+  build:toggle()
+end
+
+
+--lazygit
+local Terminal  = require('toggleterm.terminal').Terminal
+local lazygit = Terminal:new({ cmd = 'lazygit', hidden = true, direction = 'float' })
+
+function _lazygit_toggle()
+  lazygit:toggle()
+end
+
+vim.api.nvim_set_keymap("n", "<leader>g", "<cmd>lua _lazygit_toggle()<CR>", {noremap = true, silent = true})
+
+-- Lsp config and mapping 
 local opts = {noremap = true, silent = true}
-vim.keymap.set('n', '<leader>a', vim.diagnostic.open_float, opts)
+vim.keymap.set('n', '<leader>aa', '<cmd>TroubleToggle document_diagnostics<cr>', opts)
+vim.keymap.set('n', '<leader>aj', '<cmd>TroubleToggle workspace_diagnostics<cr>', opts)
+vim.keymap.set('n', '<leader>aq', '<cmd>TroubleToggle quickfix<cr>', opts)
 vim.keymap.set('n', '[c', vim.diagnostic.goto_prev, opts)
 vim.keymap.set('n', ']c', vim.diagnostic.goto_next, opts)
 vim.keymap.set('n', '<leader>z', vim.diagnostic.setloclist, opts)
@@ -74,7 +124,7 @@ local on_attach = function(client, bufnr)
   vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
   vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
   vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
-  vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
+  vim.keymap.set('n', '<leader>K', vim.lsp.buf.signature_help, bufopts)
   vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, bufopts)
   vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
   vim.keymap.set('n', '<leader>wl', function()
@@ -82,8 +132,8 @@ local on_attach = function(client, bufnr)
   end, bufopts)
   vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition, bufopts)
   vim.keymap.set('n', 'gn', vim.lsp.buf.rename, bufopts)
-  vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, bufopts)
-  vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
+  vim.keymap.set('n', '<leader>ca', '<cmd>CodeActionMenu<cr>', bufopts)
+  vim.keymap.set('n', 'gr', '<cmd>TroubleToggle lsp_references<cr>', bufopts)
   vim.keymap.set('n', '<leader>f', function() vim.lsp.buf.format { async = true } end, bufopts)
 end
 
@@ -91,31 +141,37 @@ local lsp_flags = {
   -- This is the default in Nvim 0.7+
   debounce_text_changes = 150,
 }
+local servers = {'clangd', 'sumneko_lua', 'pyright'}
+vim.g.coq_settings = {auto_start = 'shut-up'}
 
-require('lspconfig').clangd.setup{
-    on_attach = on_attach,
-    flags = lsp_flags,
-}
+for _, lsp in ipairs(servers) do
+    require('lspconfig')[lsp].setup(require('coq').lsp_ensure_capabilities({
+        on_attach = on_attach,
+        flags = lsp_flags,
+    }))
+end
 
-require('lspconfig').sumneko_lua.setup{
-    on_attach = on_attach,
-    flags = lsp_flags,
-}
+local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
+for type, icon in pairs(signs) do
+  local hl = "DiagnosticSign" .. type
+  vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
+end
 
 --Whitespace
-vim.wo.wrap = true
-vim.wo.linebreak = true -- Wraps lines a words
-vim.wo.breakindent = true -- Consistent indent of wrapped linex
-vim.bo.expandtab = true
-vim.bo.softtabstop = 4
-vim.bo.shiftwidth = 4
-vim.bo.autoindent = true
-vim.g.noshiftround = true
-vim.g.hlsearch = true
-vim.g.incsearch = true
-vim.g.smartcase = true
-vim.g.showmatch = true
+vim.o.wrap = false
+vim.o.linebreak = true -- Wraps lines a words
+vim.o.breakindent = true -- Consistent indent of wrapped linex
+vim.o.expandtab = true
+vim.o.softtabstop = 4
+vim.o.shiftwidth = 4
+vim.o.autoindent = true
+vim.o.hlsearch = true
+vim.o.incsearch = true
+vim.o.smartcase = true
+vim.o.showmatch = true
 
+-- Colorscheme
+vim.api.nvim_exec(':colorscheme tokyonight-storm', false)
 
 -- Keymaps
 
@@ -138,10 +194,35 @@ vim.keymap.set('n', '<c-l>', '<c-w><c-l>', opts)
 vim.keymap.set('n', '<c-k>', '<c-w><c-k>', opts)
 vim.keymap.set('n', '<c-j>', '<c-w><c-j>', opts)
 vim.keymap.set('n', '<c-h>', '<c-w><c-h>', opts)
+vim.keymap.set('n', '<c-n>', ':Neotree toggle<CR>', opts)
 
 vim.wo.number = true
 vim.g.splitbelow = true
 vim.g.splitright = true
-vim.bo.undofile = true
-vim.g.undodir = "~/.config/nvim/undo"
+--
+-- undodir
+vim.o.undofile = true
+vim.o.undodir = "~/.config/nvim/undo"
 
+-- Disable swapfile
+vim.bo.swapfile = false
+
+-- Telescope
+local telescope_builtin = require('telescope.builtin')
+vim.keymap.set('n', '<c-p>', telescope_builtin.find_files, opts)
+vim.keymap.set('n', '<c-t>', telescope_builtin.live_grep, opts)
+vim.keymap.set('n', '<c-m>', telescope_builtin.buffers, opts)
+
+require('telescope').setup({
+  defaults = {
+    layout_config = {
+      horizontal = { prompt_position = 'top' }
+      -- other layout configuration here
+    },
+    -- other defaults configuration here
+    sorting_strategy = 'ascending',
+  },
+})
+
+
+require('wlsample.bubble')
