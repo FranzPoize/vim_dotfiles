@@ -6,7 +6,6 @@
 -- By: Francois Poizat (@FranzP)
 
 vim.cmd [[packadd packer.nvim]]
-vim.cmd [[packadd vimspector]]
 
 -- Set leader
 vim.g.mapleader = " "
@@ -58,6 +57,17 @@ require('packer').startup(function(use)
     use 'windwp/windline.nvim'
     use 'mhinz/vim-startify'
     use 'folke/trouble.nvim'
+    use {
+        "folke/todo-comments.nvim",
+        requires = "nvim-lua/plenary.nvim",
+        config = function()
+            require('todo-comments').setup({
+                highlight = {
+                    multiline_pattern = "^//.",
+                }
+            })
+        end
+    }
     use 'nvim-treesitter/nvim-treesitter'
     use 'romgrk/barbar.nvim'
     use {
@@ -67,6 +77,24 @@ require('packer').startup(function(use)
     use 'mfussenegger/nvim-dap'
     use 'rcarriga/nvim-dap-ui'
 end)
+
+local dap = require('dap')
+
+dap.adapters.lldb = {
+    type = 'executable',
+    command = '/usr/bin/lldb-vscode',
+    name = 'lldb',
+}
+
+-- dap.configurations.cpp = {
+--     {
+--         name = 'Launch',
+--         type = 'lldb',
+--         request = 'launch',
+--         program = function()
+--             return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/'
+--     },
+-- }
 
 require('dapui').setup()
 
@@ -142,7 +170,12 @@ local lsp_flags = {
   debounce_text_changes = 150,
 }
 local servers = {'clangd', 'sumneko_lua', 'pyright'}
-vim.g.coq_settings = {auto_start = 'shut-up'}
+vim.g.coq_settings = {
+    auto_start = 'shut-up',
+    keymap = {
+        jump_to_mark = '<c-e>',
+    },
+}
 
 for _, lsp in ipairs(servers) do
     require('lspconfig')[lsp].setup(require('coq').lsp_ensure_capabilities({
@@ -205,7 +238,7 @@ vim.o.undofile = true
 vim.o.undodir = "~/.config/nvim/undo"
 
 -- Disable swapfile
-vim.bo.swapfile = false
+vim.o.swapfile = false
 
 -- Telescope
 local telescope_builtin = require('telescope.builtin')
