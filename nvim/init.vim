@@ -51,7 +51,13 @@ if exists('*minpac#init')
   call minpac#add('sheerun/vim-polyglot') " Syntax files for most languages
   call minpac#add('tpope/vim-commentary') " Toggle comments with ease
   call minpac#add('tpope/vim-fugitive')
-  call minpac#add('preservim/nerdtree')
+  call minpac#add('nvim-neo-tree/neo-tree.nvim')
+  call minpac#add('nvim-lua/plenary.nvim')
+  call minpac#add('kyazdani42/nvim-web-devicons')
+  call minpac#add('MunifTanjim/nui.nvim')
+  call minpac#add('folke/trouble.nvim')
+  call minpac#add('akinsho/toggleterm.nvim')
+  call minpac#add('folke/which-key.nvim')
 
   " Searching/Fuzzy Finding
   call minpac#add('junegunn/fzf', { 'do': './install --all' }) | call minpac#add('junegunn/fzf.vim') " FZF <3's Vim
@@ -64,11 +70,12 @@ if exists('*minpac#init')
   call minpac#add('editorconfig/editorconfig-vim')
 
   " Editor plugins/UI
-  call minpac#add('arcticicestudio/nord-vim') " nord-vim-theme
-  call minpac#add('mg979/vim-visual-multi') # multiple cursors
+  call minpac#add('folke/tokyonight.nvim') " nord-vim-theme
+  call minpac#add('mg979/vim-visual-multi') " multiple cursors
   call minpac#add('itchyny/lightline.vim') " Status bar
   call minpac#add('junegunn/goyo.vim', {'type': 'opt'})
   call minpac#add('mengelbrecht/lightline-bufferline')
+  call minpac#add('mhinz/vim-startify')
 
 endif
 " }}}
@@ -94,12 +101,12 @@ set signcolumn=yes
 " Use tab for trigger completion with characters ahead and navigate.
 " Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
 inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackSpace() ? "\<TAB>" :
       \ coc#refresh()
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
 
-function! s:check_back_space() abort
+function! CheckBackSpace() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
@@ -109,7 +116,8 @@ inoremap <silent><expr> <c-space> coc#refresh()
 
 " Use <cr> for confirm completion, `<C-g>u` means break undo chain at current position.
 " Coc only does snippet and additional edit on confirm.
-inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
 " Use `[c` and `]c` for navigate diagnostics
 nmap <silent> [c <Plug>(coc-diagnostic-prev)
@@ -194,12 +202,6 @@ nnoremap <silent> <space>k  :<C-u>CocPrev<CR>
 nnoremap <silent> <space>p  :<C-u>CocListResume<CR>
 
 " }}}
-" ALE: {{{
-let g:ale_sign_error = '>'
-let g:ale_sign_warning = '?'
-let g:ale_lint_on_text_changed = 1
-let g:ale_lint_on_save = 1
-"" }}}
 " fuzzy finder/ack Settings {{{
 "Use ripgrep
 let g:ackprg = 'rg --vimgrep --no-heading'
@@ -209,7 +211,7 @@ let $FZF_DEFAULT_OPTS='--reverse'
 
 noremap <silent> <C-p> :Files<return>
 noremap <silent> <C-t> :Rg<return>
-noremap <silent> <C-o> :Buffers<cr>
+noremap <silent> <C-m> :Buffers<cr>
 
 "" }}}
 "Lightline {{{ 
@@ -223,7 +225,7 @@ endfunction
 
 " use lightline-buffer in lightline
 let g:lightline = {
-      \ 'colorscheme': 'nord',
+      \ 'colorscheme': 'tokyonight-storm',
       \ 'component_expand': {
       \   'linter_warnings': 'CocWarnings',
       \   'linter_errors': 'CocErrors',
@@ -358,9 +360,9 @@ let g:VM_maps['Find Under'] = '<C-d>'
 let g:VM_maps['Find Subword Under'] = '<C-d>'
 " }}}
 
-" NerdTree: {{{
+" Neotree: {{{
 
-map <C-n> :NERDTreeToggle<CR>
+map <C-n> :NeoTreeShowToggle <CR>
 
 " }}}
 " }}}
@@ -426,76 +428,6 @@ set shiftwidth=4   " Number of auto indent spaces
 set autoindent " Auto indent
 set noshiftround " Indent lines by 2 not by nearest mutiple of two
 " }}}
-" Netrw: {{{
-
-let g:netrw_liststyle = 3  " Show 'tree' view
-let g:netrw_banner = 0 " Disable annoying banner
-let g:netrw_winsize = 15 " 15 pecent of screen size
-let g:netrw_altv = 1 " Auto cd
-let g:netrw_preview= 1 " open previews vertically
-let g:netrw_browse_split = 4 " Open in last used buffer
-
-" Toggle Vexplore with leader-t
-function! ToggleVExplorer()
-  if exists("t:expl_buf_num")
-    let expl_win_num = bufwinnr(t:expl_buf_num)
-    if expl_win_num != -1
-      let cur_win_nr = winnr()
-      exec expl_win_num . 'wincmd w'
-      bd
-      " exec cur_win_nr . 'wincmd w'
-      unlet t:expl_buf_num
-    else
-      unlet t:expl_buf_num
-    endif
-  else
-    exec '1wincmd w'
-    Vexplore
-    let t:expl_buf_num = bufnr("%")
-  endif
-endfunction
-
-map <silent> <leader>t :call ToggleVExplorer()<CR>
-
-" Dir setup
-" set autochdir
-
-" Follow symlinks
-function! FollowSymlink()
-  let current_file = expand('%:p')
-  " Check for symlink
-  if getftype(current_file) == 'link'
-    " Open actual filepath
-    let actual_file = resolve(current_file)
-    silent! execute 'file ' . actual_file
-  endif
-endfunction
-
-
-function! SetProjectRoot()
-  " default to current
-  lcd %:p:h
-  let my_git_dir = system("git rev-parse --show-toplevel")
-  " Check output
-  let is_not_git_dir = matchstr(my_git_dir, '^fatal:.*')
-  let is_not_dot_git_dir = matchstr(my_git_dir, '\n')
-
-  if empty(is_not_git_dir)
-    if empty(is_not_dot_git_dir)
-      lcd my_git_dir
-    endif
-  endif
-endfunction
-
-autocmd BufNewFile *
-      \   call SetProjectRoot()
-
-autocmd CursorMoved silent *
-      \ if &filetype == 'netrw' |
-      \   call SetProjectRoot() |
-      \ endif
-
-" " }}}
 " Performance: {{{
 " Different Cursor shape in tmux 
 if exists('$TMUX')
@@ -579,7 +511,7 @@ endif
 set background=dark    " Setting dark mode
 let g:deus_italics = 1
 set fillchars+=vert:\ 
-colorscheme nord
+colorscheme tokyonight-storm
 
 
 " }}}
