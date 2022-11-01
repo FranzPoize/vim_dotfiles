@@ -3,9 +3,11 @@ local default_opts = {noremap = true, silent = true}
 
 local M = {}
 
+local dap = require('dap')
+local dapui = require("dapui")
+local whichkey = require('which-key')
+
 function M.setup()
-    local dap = require('dap')
-    local dapui = require("dapui")
 
     dap.adapters.cpp = {
         type = 'executable',
@@ -56,15 +58,42 @@ function M.setup()
     vim.fn.sign_define("DapStopped", dap_breakpoint.stopped)
     vim.fn.sign_define("DapBreakpointRejected", dap_breakpoint.rejected)
 
-    keymap('n', '<leader>b', dap.toggle_breakpoint, default_opts)
-    keymap('n', '<leader>B', function() vim.ui.input({}, dap.set_breakpoint) end, default_opts)
-    keymap('n', '<leader>L', function() vim.ui.input({}, function(input) dap.set_breakpoint(nil, nil, input) end) end , default_opts)
-    keymap('n', '<F5>', dap.continue, default_opts)
-    keymap('n', '<F6>', dap.step_over, default_opts)
-    keymap('n', '<F7>', dap.step_into, default_opts)
-    keymap('n', '<F8>', dap.step_out, default_opts)
-    keymap('n', '<leader>dl', dap.run_last, default_opts)
+    local leader_keymaps = {
+        ['b'] = {dap.toggle_breakpoint, "Toggle breakpoints"},
+        ['B'] = {function() vim.ui.input({}, dap.set_breakpoint) end, "Set conditional breakpoint"},
+        ['L'] = {function() vim.ui.input({}, function(input) dap.set_breakpoint(nil, nil, input) end) end, "Set log breakpoint"},
+        d = {
+            name = 'Debug',
+            l = {dap.run_last, 'Run last'},
+        },
+    }
 
+    whichkey.register(leader_keymaps, {
+        mode = 'n',
+        prefix = '<leader>',
+        buffer = nil,
+        silent = true,
+        noremap = true,
+        nowait = false,
+    })
+
+    local keymaps = {
+        ['<F5>'] = {dap.continue, "Continue"},
+        ['<F6>'] = {dap.step_over, "Step over"},
+        ['<F7>'] = {dap.step_into, "Step into"},
+        ['<F8>'] = {dap.step_out, "Step out"},
+    }
+
+    whichkey.register(keymaps, {
+        mode = 'n',
+        prefix = '',
+        buffer = nil,
+        silent = true,
+        noremap = true,
+        nowait = false,
+    })
+
+    
     dapui.setup()
 end
 

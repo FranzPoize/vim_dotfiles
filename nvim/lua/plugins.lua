@@ -64,7 +64,6 @@ function M.setup()
             end,
         }
 
-        use 'neovim/nvim-lspconfig' -- language server config for neovim lsp client
         use {
             'ms-jpq/coq_nvim',
             run = 'python3 -m coq deps',
@@ -73,19 +72,44 @@ function M.setup()
                 'ms-jpq/coq.thirdparty',
             }
         }
+        -- language server config for neovim lsp client
+        use {
+            'HallerPatrick/py_lsp.nvim',
+            config = function()
+            end
+        }
+        use {
+            'neovim/nvim-lspconfig',
+            config = function()
+                require('config.lsp').setup()
+            end
+        }
         use 'p00f/clangd_extensions.nvim'
 
-        use 'akinsho/toggleterm.nvim' -- terminal stuff
+        use {
+            'akinsho/toggleterm.nvim', -- terminal stuff
+            config = function()
+                require('config.toggleterm').setup()
+            end
+        }
 
         -- -- fuzzy finder
         use { 'junegunn/fzf', run = './install --bin', }
         use {
             'nvim-telescope/telescope.nvim', tag = '0.1.0',
             -- or                            , branch = '0.1.x',
-            requires = { { 'nvim-lua/plenary.nvim' } }
+            requires = { { 'nvim-lua/plenary.nvim' } },
+            config = function()
+                require('config.telescope').setup()
+            end
         }
 
-        use 'folke/trouble.nvim'
+        use {
+            'folke/trouble.nvim',
+            config = function()
+                require('config.trouble').setup()
+            end
+        }
         use {
             "folke/todo-comments.nvim",
             requires = "nvim-lua/plenary.nvim",
@@ -129,6 +153,7 @@ function M.setup()
             },
             config = function()
                require('gitsigns').setup()
+               require('config.windline')
             end
         }
         use 'mhinz/vim-startify'
@@ -140,6 +165,15 @@ function M.setup()
             print "Restart Neovim required after installation!"
             require('packer').sync()
         end
+
+        -- lsp and dap installer
+        use {
+            'williamboman/mason.nvim',
+            config = function()
+                require('mason').setup()
+            end,
+        }
+
     end
 
     packer_init()

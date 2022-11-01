@@ -1,5 +1,5 @@
 local keymap = vim.api.nvim_set_keymap
-local default_opts = {noremap = true, silent = true}
+local default_opts = { noremap = true, silent = true }
 local expr_opts = { noremap = true, expr = true, silent = true }
 
 -- Better escape from normal and terminal mode
@@ -42,22 +42,15 @@ keymap("n", "<Down>", ":resize +1<CR>", default_opts)
 -- Use tab for trigger completion with characters ahead and navigate.
 -- Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
 
--- local function t(str)
---     return vim.api.nvim_replace_termcodes(str, true, true, true)
--- end
+local function t(str)
+    return vim.api.nvim_replace_termcodes(str, true, true, true)
+end
 
--- function _G.smart_tab()
---     return vim.fn.pumvisible() == 1 and t '<C-N>' or t '<Tab>'
--- end
+function _G.smart_tab()
+    return vim.fn.pumvisible() == 1 and t '<C-N>' or t '<Tab>'
+end
 
--- keymap('i', '<Tab>', 'v:lua.smart_tab()', default_opts)
-
-vim.cmd[[
-inoremap <silent><expr> <TAB>
-\ pumvisible() ? '<C-n>' :
-\ (col('.') <= 1 <Bar><Bar> getline('.')[col('.') - 2] =~# '\s') ?
-\ '<TAB>' : ddc#map#manual_complete()
-]]
+keymap('i', '<Tab>', 'v:lua.smart_tab()', default_opts)
 
 -- Sane region switching
 keymap('n', '<c-l>', '<c-w><c-l>', default_opts)
