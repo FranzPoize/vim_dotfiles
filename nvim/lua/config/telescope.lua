@@ -9,10 +9,6 @@ local whichkey = require('which-key')
 function M.setup()
     local telescope_builtin = require('telescope.builtin')
 
-    keymap('n', '<c-p>', telescope_builtin.find_files, default_opts)
-    keymap('n', '<c-t>', telescope_builtin.live_grep, default_opts)
-    keymap('n', '<c-m>', telescope_builtin.buffers, default_opts)
-
     require('telescope').setup({
         defaults = {
             layout_config = {
@@ -61,6 +57,24 @@ function M.setup()
             end,
         }):find()
     end
+
+
+
+    local keymaps = {
+        ['<c-p>'] = {telescope_builtin.find_files, "Open file"},
+        ['<c-t>'] = {telescope_builtin.live_grep, "Search in files"},
+        ['<c-m>'] = {telescope_builtin.buffers, "Open buffer"},
+    }
+
+    whichkey.register(keymaps,
+    {
+        mode = 'n',
+        prefix = '',
+        buffer = nil,
+        silent = true,
+        noremap = true,
+        nowait = false,
+    })
 
     whichkey.register({
         ['R'] = {debug_exe, 'Debug exe picker'}

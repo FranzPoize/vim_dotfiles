@@ -76,6 +76,7 @@ function M.setup()
         use {
             'HallerPatrick/py_lsp.nvim',
             config = function()
+                require('config.py_lsp').setup()
             end
         }
         use {
