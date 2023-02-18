@@ -42,16 +42,6 @@ keymap("n", "<Down>", ":resize +1<CR>", default_opts)
 -- Use tab for trigger completion with characters ahead and navigate.
 -- Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
 
-local function t(str)
-    return vim.api.nvim_replace_termcodes(str, true, true, true)
-end
-
-function _G.smart_tab()
-    return vim.fn.pumvisible() == 1 and t '<C-N>' or t '<Tab>'
-end
-
-keymap('i', '<Tab>', 'v:lua.smart_tab()', default_opts)
-
 -- Sane region switching
 keymap('n', '<c-l>', '<c-w><c-l>', default_opts)
 keymap('n', '<c-k>', '<c-w><c-k>', default_opts)

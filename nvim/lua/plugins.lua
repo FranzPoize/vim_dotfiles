@@ -38,6 +38,7 @@ function M.setup()
 
 
 
+        use 'kyazdani42/nvim-web-devicons'
 
         vim.cmd([[ let g:neo_tree_remove_legacy_commands = 1 ]])
         use {
@@ -53,6 +54,60 @@ function M.setup()
             end,
 
         }
+        use {
+            "lvimuser/lsp-inlayhints.nvim",
+            config = function()
+                require("lsp-inlayhints").setup {
+                    inlay_hints = {
+                        parameter_hints = {
+                            prefix = " <- ",
+                            remove_colon_start = true,
+                        },
+                        type_hints = {
+                            prefix = " ",
+                            remove_colon_start = true,
+                        },
+                    },
+                }
+            end,
+        }
+
+        use {
+            "hrsh7th/nvim-cmp",
+            requires = {
+                { "hrsh7th/cmp-buffer" },
+                { "hrsh7th/cmp-path" },
+                { "hrsh7th/cmp-nvim-lua" },
+                { "hrsh7th/cmp-nvim-lsp" },
+                { "saadparwaiz1/cmp_luasnip" },
+                { "hrsh7th/cmp-cmdline" },
+                { "dmitmel/cmp-cmdline-history" },
+                { "octaltree/cmp-look" },
+                { "rcarriga/cmp-dap" },
+                { "petertriho/cmp-git" },
+                { "lttr/cmp-jira" },
+            },
+            config = "require 'config.nvim-cmp-local'",
+        }
+
+        use {
+            "L3MON4D3/LuaSnip",
+            config = function()
+                require("luasnip").config.set_config {
+                    history = true,
+                    enable_autosnippets = true,
+                    updateevents = "TextChanged,TextChangedI",
+                    delete_check_events = "TextChanged",
+                    ext_opts = {
+                        [require("luasnip.util.types").choiceNode] = {
+                            active = {
+                                virt_text = { { "↺", "markdownBold" } },
+                            },
+                        },
+                    },
+                }
+            end,
+        }
 
         -- toggle comments with ease
         use 'tpope/vim-commentary'
@@ -64,14 +119,6 @@ function M.setup()
             end,
         }
 
-        use {
-            'ms-jpq/coq_nvim',
-            run = 'python3 -m coq deps',
-            requires = {
-                'ms-jpq/coq.artifacts',
-                'ms-jpq/coq.thirdparty',
-            }
-        }
         -- language server config for neovim lsp client
         use {
             'HallerPatrick/py_lsp.nvim',

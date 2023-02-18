@@ -3,10 +3,86 @@ local default_opts = {noremap = true, silent = true}
 
 local M = {}
 
+vim.lsp.protocol.CompletionItemKind = {
+    Text = " [text]",
+    Method = " [method]",
+    Function = " [function]",
+    Constructor = " [constructor]",
+    Field = "ﰠ [field]",
+    Variable = " [variable]",
+    Class = " [class]",
+    Interface = " [interface]",
+    Module = " [module]",
+    Property = " [property]",
+    Unit = " [unit]",
+    Value = " [value]",
+    Enum = " [enum]",
+    Keyword = " [key]",
+    Snippet = "﬌ [snippet]",
+    Color = " [color]",
+    File = " [file]",
+    Reference = " [reference]",
+    Folder = " [folder]",
+    EnumMember = " [enum member]",
+    Constant = " [constant]",
+    Struct = " [struct]",
+    Event = "⌘ [event]",
+    Operator = " [operator]",
+    TypeParameter = " [type]",
+}
+
+M.symbol_kind_icons = {
+    Function = "",
+    Method = "",
+    Variable = "",
+    Constant = "",
+    Interface = "練",
+    Field = "ﰠ",
+    Property = "",
+    Struct = "",
+    Enum = "",
+    Class = "",
+    File = "",
+    Module = "",
+    Namespace = "",
+    Package = "",
+    Constructor = "",
+    String = "",
+    Number = "",
+    Boolean = "◩",
+    Array = "",
+    Object = "",
+    Key = "",
+    Null = "ﳠ",
+    EnumMember = "",
+    Event = "",
+    Operator = "",
+    TypeParameter = "",
+}
+
+M.symbol_kind_colors = {
+    Function = "green",
+    Method = "green",
+    Variable = "blue",
+    Constant = "red",
+    Interface = "cyan",
+    Field = "blue",
+    Property = "blue",
+    Struct = "cyan",
+    Enum = "yellow",
+    Class = "magenta",
+}
+
 function M.setup()
     keymap('n', '[c', vim.diagnostic.goto_prev, default_opts)
     keymap('n', ']c', vim.diagnostic.goto_next, default_opts)
     keymap('n', '<leader>z', vim.diagnostic.setloclist, default_opts)
+    local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+    vim.fn.sign_define("DiagnosticSignError", { text = "", numhl = "DiagnosticError" })
+    vim.fn.sign_define("DiagnosticSignWarn", { text = "", numhl = "DiagnosticWarn" })
+    vim.fn.sign_define("DiagnosticSignInfo", { text = "", numhl = "DiagnosticInfo" })
+    vim.fn.sign_define("DiagnosticSignHint", { text = "", numhl = "DiagnosticHint" })
 
     -- Use an on_attach function to only map the following keys
     -- after the language server attaches to the current buffer
@@ -39,19 +115,43 @@ function M.setup()
         -- This is the default in Nvim 0.7+
         debounce_text_changes = 150,
     }
-    local servers = { 'clangd', 'sumneko_lua'}
-    vim.g.coq_settings = {
-        auto_start = 'shut-up',
-        keymap = {
-            jump_to_mark = '<c-e>',
-        },
-    }
+    local servers = { 'clangd', 'lua_ls'}
 
     for _, lsp in ipairs(servers) do
-        require('lspconfig')[lsp].setup(require('coq').lsp_ensure_capabilities({
+        require('lspconfig')[lsp].setup({
+            capabilities = capabilities,
             on_attach = on_attach,
             flags = lsp_flags,
-        }))
+        })
+    end
+
+    require('lspconfig').efm.setup({
+        capabilities = capabilities,
+        cmd = {"/usr/bin/efm-langserver"},
+        on_attach = on_attach,
+        init_options = {documentFormatting = true},
+        root_dir = vim.loop.cwd,
+        filetypes = {"python"},
+        settings = {
+            rootMarkers = {".git/"},
+            lintDebounce = 100,
+            languages = {
+                python = {
+                    {
+                        formatCommand = "black --fast ${-l:lineLength} -",
+                        formatStdin = true,
+                    }
+                }
+            }
+        }
+    })
+
+    vim.lsp.handlers["textDocument/publishDiagnostics"] = function(...)
+        vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+            underline = true,
+            update_in_insert = false,
+        })(...)
+        pcall(vim.diagnostic.setloclist, { open = false })
     end
 
     local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
@@ -60,10 +160,11 @@ function M.setup()
         vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
     end
 
-    require('py_lsp').setup(require('coq').lsp_ensure_capabilities({
+    require('py_lsp').setup({
+        capabilities = capabilities,
         on_attach = on_attach,
         flags = lsp_flags,
-    }))
+    })
 end
 
 return M
