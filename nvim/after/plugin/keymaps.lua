@@ -47,3 +47,8 @@ keymap('n', '<c-l>', '<c-w><c-l>', default_opts)
 keymap('n', '<c-k>', '<c-w><c-k>', default_opts)
 keymap('n', '<c-j>', '<c-w><c-j>', default_opts)
 keymap('n', '<c-h>', '<c-w><c-h>', default_opts)
+
+vim.keymap.set('n', '[c', vim.diagnostic.goto_prev, default_opts)
+vim.keymap.set('n', ']c', vim.diagnostic.goto_next, default_opts)
+vim.keymap.set('n', '<leader>z', vim.diagnostic.setloclist, default_opts)
+vim.keymap.set('n', '<leader>A', vim.diagnostic.open_float, {buffer = bufnr, noremap = true})

@@ -1,0 +1,8 @@
+{
+  "clangd.arguments": ["-j=2", "--background-index", "--clang-tidy", "-log=verbose"],
+  "python.venvPath": "/home/franz/.cache/pypoetry/virtualenvs/",
+  "python.pythonPath": "python",
+  "python.jediPath": "/home/franz/.local/lib/python3.10/site-packages/jedi/",
+  "clangd.path": "~/.config/coc/extensions/coc-clangd-data/install/14.0.3/clangd_14.0.3/bin/clangd",
+  "diagnostic.locationlistUpdate": true
+}

@@ -31,6 +31,8 @@ function M.setup()
         vim.cmd [[TroubleToggle quickfix]]
     end
 
+    dap.defaults.cpp.exception_breakpoints = {'cpp_throw', 'raised'}
+
     vim.api.nvim_create_user_command('Breaks', 'lua breaks()', {})
 
     local dap_breakpoint = {

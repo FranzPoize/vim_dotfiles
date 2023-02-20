@@ -3,3 +3,9 @@ if status is-interactive
     set MAKEFLAGS "-j"(nproc) 
     fish_add_path /home/franz/.deno/bin
 end
+set -x MANPAGER 'nvim +Man!'
+set -x MANWIDTH 999 
+
+set -x CC /usr/bin/clang
+set -x CXX /usr/bin/clang++
+set -x PYTHONBREAKPOINT kalong.breakpoint

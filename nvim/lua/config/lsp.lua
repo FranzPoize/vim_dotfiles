@@ -79,11 +79,6 @@ function M.setup()
     keymap('n', '<leader>z', vim.diagnostic.setloclist, default_opts)
     local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-    vim.fn.sign_define("DiagnosticSignError", { text = "", numhl = "DiagnosticError" })
-    vim.fn.sign_define("DiagnosticSignWarn", { text = "", numhl = "DiagnosticWarn" })
-    vim.fn.sign_define("DiagnosticSignInfo", { text = "", numhl = "DiagnosticInfo" })
-    vim.fn.sign_define("DiagnosticSignHint", { text = "", numhl = "DiagnosticHint" })
-
     -- Use an on_attach function to only map the following keys
     -- after the language server attaches to the current buffer
     local on_attach = function(client, bufnr)
@@ -96,7 +91,7 @@ function M.setup()
         keymap('n', 'gD', vim.lsp.buf.declaration, bufopts)
         keymap('n', 'gd', vim.lsp.buf.definition, bufopts)
         keymap('n', 'K', vim.lsp.buf.hover, bufopts)
-        keymap('n', 'gi', vim.lsp.buf.implementation, bufopts)
+        keymap('n', 'gh', vim.lsp.buf.implementation, bufopts)
         keymap('n', '<leader>K', vim.lsp.buf.signature_help, bufopts)
         keymap('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, bufopts)
         keymap('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
@@ -116,6 +111,8 @@ function M.setup()
         debounce_text_changes = 150,
     }
     local servers = { 'clangd', 'lua_ls'}
+
+    local lspconfig = require('lspconfig')
 
     for _, lsp in ipairs(servers) do
         require('lspconfig')[lsp].setup({
@@ -153,6 +150,55 @@ function M.setup()
         })(...)
         pcall(vim.diagnostic.setloclist, { open = false })
     end
+
+    local pylint = {
+        lintCommand = "pylint --load-plugins=pylint_odoo --output-format text --score no --msg-template {path}:{line}:{column}:{C}:{msg} ${INPUT}",
+        lintStdin = false,
+        lintFormats = {
+            "%f:%l:%c:%t:%m",
+        },
+        lintOffsetColumns = 1,
+        lintCategoryMap = {
+            I = "H",
+            R = "I",
+            C = "I",
+            W = "W",
+            E = "E",
+            F = "E",
+        },
+    }
+
+    local isort = {
+        formatCommand = "isort --stdout ${-l:lineLength} --profile black -",
+        formatStdin = true,
+    }
+
+    local black = {
+        formatCommand = "black --quiet ${-l:lineLength} -",
+        formatStdin = true,
+    }
+
+    local languages = {
+        python = {black, isort, pylint},
+    }
+
+    lspconfig.efm.setup(require('coq').lsp_ensure_capabilities({
+        on_attach = on_attach,
+        init_options = {documentFormatting = true},
+        root_dir = vim.loop.cwd,
+        filetypes = vim.tbl_keys(languages),
+        settings = {
+            rootMarkers = {".git/"},
+            lintDebounce = 100,
+            languages = languages,
+        }
+    }))
+
+    -- vim.fn.sign_define("DiagnosticSignError", { text = "", numhl = "DiagnosticError" })
+    -- vim.fn.sign_define("DiagnosticSignWarn", { text = "", numhl = "DiagnosticWarn" })
+    -- vim.fn.sign_define("DiagnosticSignInfo", { text = "", numhl = "DiagnosticInfo" })
+    -- vim.fn.sign_define("DiagnosticSignHint", { text = "", numhl = "DiagnosticHint" })
+
 
     local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
     for type, icon in pairs(signs) do

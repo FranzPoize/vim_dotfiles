@@ -169,6 +169,8 @@ function M.setup()
                 })
             end
         }
+
+        use 'p00f/nvim-ts-rainbow'
         use {
             'nvim-treesitter/nvim-treesitter',
             config = function()
