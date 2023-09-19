@@ -14,12 +14,13 @@ opt.softtabstop = 4
 opt.shiftwidth = 4
 opt.autoindent = true
 opt.termguicolors = true
-opt.hlsearch = true
+opt.hlsearch = false
 opt.showmatch = true
 opt.incsearch = true
 opt.number = true
+opt.relativenumber = true
 opt.timeoutlen = 300
-opt.mousemode = 'a'
+opt.mouse = ''
 opt.breakindent = true
 opt.undofile = true
 opt.ignorecase = true
@@ -29,6 +30,8 @@ opt.signcolumn = "yes"
 opt.clipboard = "unnamedplus"
 opt.swapfile = false
 
+opt.scrolloff = 8
+
 -- Highlight on yank
 vim.cmd [[
   augroup YankHighlight
@@ -36,3 +39,10 @@ vim.cmd [[
     autocmd TextYankPost * silent! lua vim.highlight.on_yank()
   augroup end
 ]]
+
+vim.filetype.add({
+    extension = {
+        vert = 'glsl',
+        frag = 'glsl'
+    }
+})

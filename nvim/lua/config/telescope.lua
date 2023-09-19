@@ -41,16 +41,19 @@ function M.setup()
         end
         pickers.new(opts, {
             prompt_title = 'Debug executable',
-            finder = finders.new_oneshot_job({ "find", ".", "-type", "f", "-perm", "/u=x,g=x,o=x", "-name", "*-" }, opts),
+            finder = finders.new_oneshot_job(
+            { "find", ".", "-type", "f", "-executable", "-path", "*Debug*", "-path", "*clang*", "-name", "*-"}, opts),
+            --finder = finders.new_oneshot_job({ "find", ".", "-type", "f", "-executable", "-p", "**/Debug/**", "-name", "*-", "-o", "-name", "*tests" }, opts),
             sorter = conf.generic_sorter(opts),
             attach_mappings = function(prompt_bufnr, map)
                 actions.select_default:replace(function()
                     actions.close(prompt_bufnr)
                     local selection = action_state.get_selected_entry()
                     dap.run({
-                        type = 'cpp',
+                        type = 'codelldb',
                         request = 'launch',
                         program = selection.value,
+                        stopOnEntry = false,
                     })
                 end)
                 return true
@@ -61,32 +64,32 @@ function M.setup()
 
 
     local keymaps = {
-        ['<c-p>'] = {telescope_builtin.find_files, "Open file"},
-        ['<c-t>'] = {telescope_builtin.live_grep, "Search in files"},
-        ['<c-m>'] = {telescope_builtin.buffers, "Open buffer"},
+        ['<c-p>'] = { telescope_builtin.find_files, "Open file" },
+        ['<c-t>'] = { telescope_builtin.live_grep, "Search in files" },
+        ['<c-m>'] = { telescope_builtin.buffers, "Open buffer" },
     }
 
     whichkey.register(keymaps,
-    {
-        mode = 'n',
-        prefix = '',
-        buffer = nil,
-        silent = true,
-        noremap = true,
-        nowait = false,
-    })
+        {
+            mode = 'n',
+            prefix = '',
+            buffer = nil,
+            silent = true,
+            noremap = true,
+            nowait = false,
+        })
 
     whichkey.register({
-        ['R'] = {debug_exe, 'Debug exe picker'}
-    },
-    {
-        mode = 'n',
-        prefix = '<leader>',
-        buffer = nil,
-        silent = true,
-        noremap = true,
-        nowait = false,
-    })
+            ['R'] = { debug_exe, 'Debug exe picker' }
+        },
+        {
+            mode = 'n',
+            prefix = '<leader>',
+            buffer = nil,
+            silent = true,
+            noremap = true,
+            nowait = false,
+        })
 end
 
 return M

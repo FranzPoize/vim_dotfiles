@@ -9,10 +9,30 @@ local whichkey = require('which-key')
 
 function M.setup()
 
-    dap.adapters.cpp = {
-        type = 'executable',
-        command = '/usr/bin/lldb-vscode',
-        name = 'lldb',
+    -- dap.adapters.cpp = {
+    --     type = 'executable',
+    --     command = '/usr/bin/lldb-vscode',
+    --     name = 'lldb',
+    -- }
+
+    dap.adapters.codelldb = {
+        type = 'server',
+        port = '${port}',
+        executable = {
+            command = '/home/franz/.local/share/nvim/mason/bin/codelldb',
+            args = {'--port', '${port}'},
+        }
+    }
+
+    dap.configurations.cpp = {
+        name = "Launch file",
+        type = "codelldb",
+        request = "launch",
+        program = function()
+            return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
     }
 
     dap.listeners.after.event_initialized["dapui_config"] = function()
@@ -23,7 +43,6 @@ function M.setup()
     end
     dap.listeners.before.event_exited["dapui_config"] = function()
         dapui.close()
-        vim.api.nvim_exec(':bdelete! \\[dap-repl]', false)
     end
 
     function breaks()
@@ -80,10 +99,12 @@ function M.setup()
     })
 
     local keymaps = {
+        ['<F4>'] = {dap.pause, "Continue"},
         ['<F5>'] = {dap.continue, "Continue"},
         ['<F6>'] = {dap.step_over, "Step over"},
         ['<F7>'] = {dap.step_into, "Step into"},
         ['<F8>'] = {dap.step_out, "Step out"},
+        ['<F9>'] = {dap.terminate, "Terminate"},
     }
 
     whichkey.register(keymaps, {

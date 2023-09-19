@@ -36,8 +36,6 @@ function M.setup()
         use 'wbthomason/packer.nvim'
         use 'folke/tokyonight.nvim'
 
-
-
         use 'kyazdani42/nvim-web-devicons'
 
         vim.cmd([[ let g:neo_tree_remove_legacy_commands = 1 ]])
@@ -89,6 +87,7 @@ function M.setup()
             },
             config = "require 'config.nvim-cmp-local'",
         }
+        use 'rafamadriz/friendly-snippets'
 
         use {
             "L3MON4D3/LuaSnip",
@@ -111,6 +110,9 @@ function M.setup()
 
         -- toggle comments with ease
         use 'tpope/vim-commentary'
+        use 'tpope/vim-fugitive'
+
+        use 'mbbill/undotree'
 
         use {
             'folke/which-key.nvim', -- get easy info about bindings
@@ -119,13 +121,6 @@ function M.setup()
             end,
         }
 
-        -- language server config for neovim lsp client
-        use {
-            'HallerPatrick/py_lsp.nvim',
-            config = function()
-                require('config.py_lsp').setup()
-            end
-        }
         use {
             'neovim/nvim-lspconfig',
             config = function()
@@ -170,7 +165,6 @@ function M.setup()
             end
         }
 
-        use 'p00f/nvim-ts-rainbow'
         use {
             'nvim-treesitter/nvim-treesitter',
             config = function()
@@ -195,7 +189,6 @@ function M.setup()
 
         -- UI
         use 'stevearc/dressing.nvim'
-        use 'romgrk/barbar.nvim'
         use {
             'windwp/windline.nvim',
             requires = {
@@ -207,6 +200,8 @@ function M.setup()
             end
         }
         use 'mhinz/vim-startify'
+
+        use 'ThePrimeagen/harpoon'
 
         -- formatting
         use 'editorconfig/editorconfig-vim'

@@ -1,5 +1,5 @@
 local keymap = vim.keymap.set
-local default_opts = {noremap = true, silent = true}
+local default_opts = { noremap = true, silent = true }
 
 local M = {}
 
@@ -107,37 +107,35 @@ function M.setup()
         -- This is the default in Nvim 0.7+
         debounce_text_changes = 150,
     }
-    local servers = { 'clangd', 'lua_ls'}
 
     local lspconfig = require('lspconfig')
 
-    for _, lsp in ipairs(servers) do
-        require('lspconfig')[lsp].setup({
-            capabilities = capabilities,
-            on_attach = on_attach,
-            flags = lsp_flags,
-        })
-    end
-
-    require('lspconfig').efm.setup({
+    require('lspconfig').lua_ls.setup({
         capabilities = capabilities,
-        cmd = {"/usr/bin/efm-langserver"},
         on_attach = on_attach,
-        init_options = {documentFormatting = true},
-        root_dir = vim.loop.cwd,
-        filetypes = {"python"},
-        settings = {
-            rootMarkers = {".git/"},
-            lintDebounce = 100,
-            languages = {
-                python = {
-                    {
-                        formatCommand = "black --fast ${-l:lineLength} -",
-                        formatStdin = true,
-                    }
-                }
-            }
-        }
+        flags = lsp_flags,
+    })
+
+    require('lspconfig').clangd.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        flags = lsp_flags,
+        cmd = {"clangd", "-j", "4"}
+    })
+
+    -- require('lspconfig').pyright.setup({
+    --     capabilities = capabilities,
+    --     on_attach = on_attach,
+    --     flags = lsp_flags,
+    --     root_dir = function()
+    --         return vim.fn.getcwd()
+    --     end
+    -- })
+
+    require('lspconfig').glslls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        flags = lsp_flags,
     })
 
     vim.lsp.handlers["textDocument/publishDiagnostics"] = function(...)
@@ -176,21 +174,23 @@ function M.setup()
     }
 
     local languages = {
-        python = {black, isort, pylint},
+        python = { black, isort, pylint },
     }
 
     lspconfig.efm.setup({
         capabilities = capabilities,
         on_attach = on_attach,
-        init_options = {documentFormatting = true},
+        init_options = { documentFormatting = true },
         root_dir = vim.loop.cwd,
         filetypes = vim.tbl_keys(languages),
         settings = {
-            rootMarkers = {".git/"},
+            rootMarkers = { ".git/" },
             lintDebounce = 100,
             languages = languages,
         }
     })
+
+    vim.lsp.set_log_level(vim.log.levels.OFF)
 
     -- vim.fn.sign_define("DiagnosticSignError", { text = "", numhl = "DiagnosticError" })
     -- vim.fn.sign_define("DiagnosticSignWarn", { text = "", numhl = "DiagnosticWarn" })
@@ -203,12 +203,6 @@ function M.setup()
         local hl = "DiagnosticSign" .. type
         vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
     end
-
-    require('py_lsp').setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
-        flags = lsp_flags,
-    })
 end
 
 return M

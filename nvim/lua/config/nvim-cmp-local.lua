@@ -1,27 +1,34 @@
 local cmp = require "cmp"
 local cmp_compare = require "config.cmp_compare"
 local dev_icons = require "nvim-web-devicons"
-require("cmp_git").setup()
-require("cmp_jira").setup()
 
 local luasnip = require("luasnip")
 
 cmp.setup {
 
+    snippet = {
+      -- REQUIRED - you must specify a snippet engine
+      expand = function(args)
+        luasnip.lsp_expand(args.body) -- For `luasnip` users.
+      end,
+    },
+    enabled = function()
+        if (vim.bo.buftype ~= 'prompt' and not require('cmp.config.context').in_treesitter_capture('comment')
+            and not require('cmp.config.context').in_syntax_group('Comment')) or require('cmp_dap').is_dap_buffer() then
+            return true
+        else
+            return false
+        end
+    end,
+
     mapping = {
         ["<C-b>"] = cmp.mapping.scroll_docs(-5),
         ["<C-f>"] = cmp.mapping.scroll_docs(5),
         ["<C-e>"] = cmp.mapping.close(),
-        ["<CR>"] = function(fallback)
-            if cmp.visible() then
-                return cmp.mapping.confirm {
+        ["<C-CR>"] = cmp.mapping.confirm {
                     behavior = cmp.ConfirmBehavior.Insert,
                     select = true,
-                }(fallback)
-            else
-                return fallback()
-            end
-        end,
+        },
         ["<C-space>"] = function(fallback)
             if cmp.visible() then
                 return cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Insert }(fallback)
@@ -64,11 +71,7 @@ cmp.setup {
 
     sources = {
         { name = "path", priority_weight = 110 },
-        { name = "cmp_jira", priority_weight = 110 },
-        { name = "orgmode", priority_weight = 110 },
-        { name = "crates", priority_weight = 110 },
         { name = "dap", priority_weight = 110 },
-        { name = "git", priority_weight = 110 },
         { name = "nvim_lsp", max_item_count = 20, priority_weight = 100 },
         { name = "nvim_lua", priority_weight = 90 },
         { name = "luasnip", priority_weight = 80 },
@@ -95,7 +98,6 @@ cmp.setup {
     formatting = {
         format = function(entry, vim_item)
             local menu_map = {
-                gh_issues = "[Issues]",
                 buffer = "[Buf]",
                 nvim_lsp = "[LSP]",
                 nvim_lua = "[API]",
@@ -104,10 +106,8 @@ cmp.setup {
                 tmux = "[Tmux]",
                 look = "[Look]",
                 rg = "[RG]",
-                crates = "[Crates]",
                 orgmode = "[ORG]",
                 dap = "[DAP]",
-                cmp_jira = "[JIRA]",
             }
             vim_item.menu = menu_map[entry.source.name] or string.format("[%s]", entry.source.name)
 
@@ -122,12 +122,8 @@ cmp.setup {
     },
 
     window = {
-        documentation = {
-            border = vim.g.floating_window_border_dark,
-        },
-        completion = {
-            border = vim.g.floating_window_border_dark,
-        },
+        documentation = cmp.config.window.bordered(),
+        completion = cmp.config.window.bordered(),
     },
 
     experimental = {
@@ -149,6 +145,12 @@ local cmdline_mappings = {
         c = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Insert },
     },
 }
+
+cmp.setup.filetype({"dap-repl", "dapui_watches", "dapui_hover"}, {
+    sources = {
+        {name= "dap"},
+    },
+})
 
 cmp.setup.cmdline(":", {
     mapping = {
