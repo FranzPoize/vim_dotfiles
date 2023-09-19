@@ -74,9 +74,6 @@ M.symbol_kind_colors = {
 }
 
 function M.setup()
-    keymap('n', '[c', vim.diagnostic.goto_prev, default_opts)
-    keymap('n', ']c', vim.diagnostic.goto_next, default_opts)
-    keymap('n', '<leader>z', vim.diagnostic.setloclist, default_opts)
     local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
     -- Use an on_attach function to only map the following keys
@@ -182,7 +179,8 @@ function M.setup()
         python = {black, isort, pylint},
     }
 
-    lspconfig.efm.setup(require('coq').lsp_ensure_capabilities({
+    lspconfig.efm.setup({
+        capabilities = capabilities,
         on_attach = on_attach,
         init_options = {documentFormatting = true},
         root_dir = vim.loop.cwd,
@@ -192,7 +190,7 @@ function M.setup()
             lintDebounce = 100,
             languages = languages,
         }
-    }))
+    })
 
     -- vim.fn.sign_define("DiagnosticSignError", { text = "", numhl = "DiagnosticError" })
     -- vim.fn.sign_define("DiagnosticSignWarn", { text = "", numhl = "DiagnosticWarn" })

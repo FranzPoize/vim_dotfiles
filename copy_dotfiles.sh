@@ -10,4 +10,7 @@ cp ~/.config/i3/config i3/
 cp -R ~/.config/fish/ .
 [ -d "./polybar/" ] && rm -rf polybar
 cp -R ~/.config/polybar/ .
+[ -d "./pulse/" ] && rm -rf pulse
+mkdir pulse
+cp ~/.config/pulse/equalizerrc pulse/
 
