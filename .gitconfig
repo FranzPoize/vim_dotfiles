@@ -1,0 +1,16 @@
+[alias]
+	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+[user]
+	email = francois.poizat@gmail.com
+	name = Francois Poizat
+[core]
+	editor = nvim
+	pager = delta
+[rerere]
+	enabled = true
+[status]
+	submoduleSummary = true
+[pull]
+	rebase = true
+[push]
+	autoSetupRemote = true
